@@ -30,20 +30,12 @@ const styles = {
 };
 
 class GridCardsDescription extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      items: this.props.items
-    };
-  }
-
   render() {
     const { classes } = this.props;
     return (
       <div>
         <GridList cellHeight={360} cols={4} className={classes.gridList}>
-          {this.state.items.map((item, index) => (
+          {this.props.items.map((item, index) => (
             <GridListTile key={index} cols={0.8} rows={1}>
               <Card className={classes.card}>
                 <CardActionArea>
@@ -54,9 +46,9 @@ class GridCardsDescription extends Component {
                   />
                   <CardContent>
                     <Typography gutterBottom variant="h5" component="h2">
-                      {item.name}
+                      {item.title}
                     </Typography>
-                    <Typography component="p">{item.description}</Typography>
+                    <Typography component="p">{item.text}</Typography>
                   </CardContent>
                 </CardActionArea>
                 <CardActions>

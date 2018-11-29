@@ -208,7 +208,7 @@ class App extends Component {
             <Divider />
             <List>
               {[
-                { name: "Inicio", icon: <HomeIcon />, path: "/" },
+                { name: "Inicio", icon: <HomeIcon />, path: "/home" },
                 { name: "Páginas", icon: <FileCopyIcon />, path: "/pages" },
                 {
                   name: "Descrições",
@@ -250,7 +250,7 @@ class App extends Component {
           <main className={classes.content}>
             <div className={classes.toolbar} />
             <Switch>
-              <Route exact path="/" component={HomeLayout} />
+              <Route path="/home" component={HomeLayout} />
               <Route exact path="/pages" component={PagesLayout} />
               <Route
                 exact
