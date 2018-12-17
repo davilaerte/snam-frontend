@@ -12,8 +12,10 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import ShareIcon from "@material-ui/icons/Share";
+import Badge from '@material-ui/core/Badge';
+import request from "../config";
 
-const styles = {
+const styles = theme => ({
   root: {
     display: "flex",
     overflow: "hidden"
@@ -26,10 +28,47 @@ const styles = {
   },
   gridList: {
     transform: "translateZ(0)"
+  },
+  badge: {
+    top: 10,
+    right: -16,
+    border: `2px solid ${
+      theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[900]
+      }`,
   }
-};
+});
 
 class GridCardsDescription extends Component {
+
+  like = (descriptionId) => {
+    console.log('passou');
+    const method = "PUT";
+    const path = "/description/" + descriptionId + "/like";
+    request(path, method, {}, {
+      "Authorization": "Bearer " + localStorage.getItem('access_token')
+    }).then(response => {
+      if (response.ok)
+        response.json().then(data => {
+          this.props.setLike(data._id);
+        });
+      else console.log("Error!");
+    });
+  }
+
+  deslike = (descriptionId) => {
+    const method = "PUT";
+    const path = "/description/" + descriptionId + "/deslike";
+    request(path, method, {}, {
+      "Authorization": "Bearer " + localStorage.getItem('access_token')
+    }).then(response => {
+      if (response.ok)
+        response.json().then(data => {
+          this.props.setDeslike(data._id);
+        });
+      else console.log("Error!");
+    });
+  }
+
   render() {
     const { classes } = this.props;
     return (
@@ -52,8 +91,10 @@ class GridCardsDescription extends Component {
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
-                  <IconButton aria-label="Add to favorites">
-                    <ThumbUpAltIcon />
+                  <IconButton color={item.hasUserLike ? "primary" : "default"} aria-label="Like" onClick={item.hasUserLike ? () => this.deslike(item._id) : () => this.like(item._id)}>
+                    <Badge color="primary" badgeContent={item.like} classes={{ badge: classes.badge }}>
+                      <ThumbUpAltIcon />
+                    </Badge>
                   </IconButton>
                   <IconButton aria-label="Share">
                     <ShareIcon />

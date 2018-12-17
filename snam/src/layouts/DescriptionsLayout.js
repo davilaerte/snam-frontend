@@ -44,13 +44,41 @@ class DescriptionsLayout extends Component {
 
     const method = "GET";
     const path = "/description/all";
-    request(path, method, undefined, {}).then(response => {
+    request(path, method, undefined, {
+      "Authorization": "Bearer " + localStorage.getItem('access_token')
+    }).then(response => {
       if (response.ok)
         response.json().then(data => {
           this.setState({ items: data });
         });
       else console.log("Error!");
     });
+  }
+
+  setLike(itemId) {
+    const items = [...this.state.items];
+
+    items.forEach(element => {
+      if (element._id === itemId) {
+        element.like += 1;
+        element.hasUserLike = true;
+      }
+    });
+
+    this.setState({ items });
+  }
+
+  setDeslike(itemId) {
+    const items = [...this.state.items];
+
+    items.forEach(element => {
+      if (element._id === itemId) {
+        element.like -= 1;
+        element.hasUserLike = false;
+      }
+    });
+
+    this.setState({ items });
   }
 
   render() {
@@ -97,7 +125,7 @@ class DescriptionsLayout extends Component {
             </Toolbar>
           </AppBar>
         </Paper>
-        <GridCardsDescription items={this.state.items} />
+        <GridCardsDescription setLike={this.setLike.bind(this)} setDeslike={this.setDeslike.bind(this)} items={this.state.items} />
       </div>
     );
   }

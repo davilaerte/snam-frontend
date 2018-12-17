@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 import { Route } from "react-router-dom";
+import { Redirect } from "react-router";
 import UserDescriptionLayout from "./UserDescriptionsLayout";
 import UserProfileLayout from "./UserProfileLayout";
+import UserPagesLayout from "./UserPagesLayout";
 import { history } from "../config/history";
 import { withStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-
-// Mock para usuario, equanto a autenticação não está implementada
-const userIdMock = "5bbe3efef9d6ea182853a71d";
 
 const styles = theme => ({
     root: {
@@ -27,13 +26,11 @@ class HomeLayout extends Component {
             value: 0,
             numberDescriptions: 0
         };
-
-        history.push("/home/profile");
     }
 
-    handleChange = (event, value) => {
+    setTabValue(value) {
         this.setState({ value });
-    };
+    }
 
     setNumberDescriptions(number) {
         this.setState({ numberDescriptions: number });
@@ -47,7 +44,6 @@ class HomeLayout extends Component {
                     <Tabs
                         fullWidth
                         value={this.state.value}
-                        onChange={this.handleChange}
                         indicatorColor="primary"
                         textColor="primary"
                         centered
@@ -64,18 +60,26 @@ class HomeLayout extends Component {
                     </Tabs>
                 </Paper>
                 <div>
+                    <Route exact path="/home" render={() => (<Redirect to="/home/profile" />)} />
                     <Route
                         exact
                         path="/home/descriptions"
                         render={props => (
-                            <UserDescriptionLayout {...props} userId={userIdMock} setNumberDescriptions={this.setNumberDescriptions.bind(this)} />
+                            <UserDescriptionLayout {...props} setTabValue={() => this.setTabValue(2)} setNumberDescriptions={this.setNumberDescriptions.bind(this)} />
+                        )}
+                    />
+                    <Route
+                        exact
+                        path="/home/pages"
+                        render={props => (
+                            <UserPagesLayout {...props} setTabValue={() => this.setTabValue(1)} />
                         )}
                     />
                     <Route
                         exact
                         path="/home/profile"
                         render={props => (
-                            <UserProfileLayout {...props} userId={userIdMock} numberDescriptions={this.state.numberDescriptions} />
+                            <UserProfileLayout {...props} setTabValue={() => this.setTabValue(0)} numberDescriptions={this.state.numberDescriptions} />
                         )}
                     />
                 </div>

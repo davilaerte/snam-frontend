@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Router, Route, Switch } from "react-router-dom";
+import { Redirect } from "react-router";
 import { history } from "./config/history";
 import PropTypes from "prop-types";
 import classNames from "classnames";
@@ -24,18 +25,23 @@ import DescriptionIcon from "@material-ui/icons/Description";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import PeopleIcon from "@material-ui/icons/People";
 import { fade } from "@material-ui/core/styles/colorManipulator";
+import MenuItem from '@material-ui/core/MenuItem';
+import Menu from '@material-ui/core/Menu';
+import AccountCircle from '@material-ui/icons/AccountCircle';
 
 import HomeLayout from "./layouts/HomeLayout";
 import PagesLayout from "./layouts/PagesLayout";
 import DescriptionsLayout from "./layouts/DescriptionsLayout";
 import NotificationsLayout from "./layouts/NotificationsLayout";
 import AboutLayout from "./layouts/AboutLayout";
+import LoginLayout from "./layouts/LoginLayout";
 
 const drawerWidth = 240;
+const tokenName = 'access_token';
 
 const styles = theme => ({
   root: {
-    display: "flex"
+    display: "flex",
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -140,7 +146,12 @@ class App extends Component {
     super(props);
 
     this.state = {
-      open: false
+      open: false,
+      openProfileMenu: false,
+      anchorEl: null,
+      hasLoggedUser: Boolean(localStorage.getItem(tokenName)),
+      authPaths: [{ path: '/', redirect: '/home', isExact: true }, { path: '/home', component: HomeLayout, isExact: false }, { path: '/pages', component: PagesLayout, isExact: true }, { path: '/descriptions', component: DescriptionsLayout, isExact: true }, { path: '/notifications', component: NotificationsLayout, isExact: true }, { path: '/about', component: AboutLayout, isExact: true }],
+      openPaths: [{ path: '/login', component: LoginLayout, isExact: true, props: { login: this.login.bind(this) } }, { path: '/', redirect: '/login', isExact: true }, { path: '/about', component: AboutLayout, isExact: true }]
     };
   }
 
@@ -152,8 +163,31 @@ class App extends Component {
     this.setState({ open: false });
   };
 
+  handleMenu = (event) => {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleClose = () => {
+    this.setState({ anchorEl: null });
+  };
+
+  login = (token) => {
+    localStorage.setItem(tokenName, token);
+    this.setState({ hasLoggedUser: true });
+    history.push('/home')
+  };
+
+  logout = () => {
+    localStorage.removeItem(tokenName);
+    this.setState({ hasLoggedUser: false });
+    this.handleClose();
+    history.push('/login')
+  };
+
   render() {
     const { classes, theme } = this.props;
+    const { anchorEl } = this.state;
+    const open = Boolean(anchorEl);
 
     return (
       <Router history={history}>
@@ -180,6 +214,22 @@ class App extends Component {
               <Typography variant="h6" color="inherit" noWrap>
                 Snam
               </Typography>
+              {this.state.hasLoggedUser && (<div style={{ marginLeft: 'auto', marginRight: '60px' }}>
+                <IconButton
+                  onClick={this.handleMenu}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={this.handleClose}
+                >
+                  <MenuItem onClick={this.logout}>Logout</MenuItem>
+                </Menu>
+              </div>)}
             </Toolbar>
           </AppBar>
           <Drawer
@@ -201,13 +251,13 @@ class App extends Component {
                 {theme.direction === "rtl" ? (
                   <ChevronRightIcon />
                 ) : (
-                  <ChevronLeftIcon />
-                )}
+                    <ChevronLeftIcon />
+                  )}
               </IconButton>
             </div>
             <Divider />
             <List>
-              {[
+              {(this.state.hasLoggedUser ? ([
                 { name: "Inicio", icon: <HomeIcon />, path: "/home" },
                 { name: "Páginas", icon: <FileCopyIcon />, path: "/pages" },
                 {
@@ -220,7 +270,11 @@ class App extends Component {
                   icon: <NotificationsIcon />,
                   path: "/notifications"
                 }
-              ].map(item => (
+              ]) : [{
+                name: "Login",
+                icon: <DescriptionIcon />,
+                path: "/login"
+              }]).map(item => (
                 <ListItem
                   button
                   key={item.name}
@@ -250,19 +304,7 @@ class App extends Component {
           <main className={classes.content}>
             <div className={classes.toolbar} />
             <Switch>
-              <Route path="/home" component={HomeLayout} />
-              <Route exact path="/pages" component={PagesLayout} />
-              <Route
-                exact
-                path="/descriptions"
-                component={DescriptionsLayout}
-              />
-              <Route
-                exact
-                path="/notifications"
-                component={NotificationsLayout}
-              />
-              <Route exact path="/about" component={AboutLayout} />
+              {(this.state.hasLoggedUser ? this.state.authPaths : this.state.openPaths).map(item => (item.redirect ? <Route exact path={item.path} render={() => (<Redirect to={item.redirect} />)} /> : item.isExact ? <Route exact path={item.path} render={() => (<item.component {...item.props} />)} /> : <Route path={item.path} render={() => (<item.component {...item.props} />)} />))}
             </Switch>
           </main>
         </div>

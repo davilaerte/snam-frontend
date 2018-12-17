@@ -63,20 +63,12 @@ class UserDescriptionsLayout extends Component {
       }
     };
 
-    const method = "GET";
-    const path = "/description/user/" + this.props.userId;
-
-    request(path, method, undefined, {}).then(response => {
-      if (response.ok)
-        response.json().then(data => {
-          this.setState({ items: data });
-          this.props.setNumberDescriptions(data.length);
-        });
-      else console.log("Error!");
-    });
+    this.props.setTabValue();
+    this.getDescriptions();
   }
 
   handleOpen = () => {
+    console.log(document.cookie);
     this.setState({ open: true });
   };
 
@@ -96,11 +88,28 @@ class UserDescriptionsLayout extends Component {
     }
   }
 
+  getDescriptions() {
+    const method = "GET";
+    const path = "/description";
+
+    request(path, method, undefined, {
+      "Authorization": "Bearer " + localStorage.getItem('access_token')
+    }).then(response => {
+      if (response.ok)
+        response.json().then(data => {
+          this.setState({ items: data });
+          this.props.setNumberDescriptions(data.length);
+        });
+      else console.log("Error!");
+    });
+  }
+
   saveDescription() {
     const method = "POST";
-    const path = "/description/user/" + this.props.userId;
+    const path = "/description";
     request(path, method, this.state.description, {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem('access_token')
     }).then(response => {
       if (response.ok)
         response.json().then(data => {
@@ -114,6 +123,32 @@ class UserDescriptionsLayout extends Component {
     });
 
     this.handleClose();
+  }
+
+  setLike(itemId) {
+    const items = [...this.state.items];
+
+    items.forEach(element => {
+      if (element._id === itemId) {
+        element.like += 1;
+        element.hasUserLike = true;
+      }
+    });
+
+    this.setState({ items });
+  }
+
+  setDeslike(itemId) {
+    const items = [...this.state.items];
+
+    items.forEach(element => {
+      if (element._id === itemId) {
+        element.like -= 1;
+        element.hasUserLike = false;
+      }
+    });
+
+    this.setState({ items });
   }
 
   render() {
@@ -194,7 +229,7 @@ class UserDescriptionsLayout extends Component {
           </Button>
           </div>
         </Modal>
-        <GridCardsDescription items={this.state.items} />
+        <GridCardsDescription setLike={this.setLike.bind(this)} setDeslike={this.setDeslike.bind(this)} items={this.state.items} />
       </div>
     );
   }
