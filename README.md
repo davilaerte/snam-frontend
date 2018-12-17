@@ -13,3 +13,5 @@ npm install (Caso precise instalar as dependências)
 npm start
 ```
 Agora acesse a aplicação em: http://localhost:3000/
+
+Pequeno vídeo mostrando como usar a aplicação: https://drive.google.com/file/d/125ljOMhZ1TfkOyPu2Ofi_DOyFR_Tu8_9/view?usp=sharing
