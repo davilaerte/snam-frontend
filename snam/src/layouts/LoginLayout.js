@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -9,7 +10,90 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import green from '@material-ui/core/colors/green';
+import amber from '@material-ui/core/colors/amber';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import WarningIcon from '@material-ui/icons/Warning';
 import request from "../config";
+
+const variantIcon = {
+  success: CheckCircleIcon,
+  warning: WarningIcon,
+  error: ErrorIcon,
+  info: InfoIcon,
+};
+
+const stylesOne = theme => ({
+  success: {
+    backgroundColor: green[600],
+  },
+  error: {
+    backgroundColor: theme.palette.error.dark,
+  },
+  info: {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  warning: {
+    backgroundColor: amber[700],
+  },
+  icon: {
+    fontSize: 20,
+  },
+  iconVariant: {
+    opacity: 0.9,
+    marginRight: theme.spacing.unit,
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+});
+
+function MySnackbarContent(props) {
+  const { classes, className, message, onClose, variant, ...other } = props;
+  const Icon = variantIcon[variant];
+
+  return (
+    <SnackbarContent
+      className={classNames(classes[variant], className)}
+      aria-describedby="client-snackbar"
+      message={
+        <span id="client-snackbar" className={classes.message}>
+          <Icon className={classNames(classes.icon, classes.iconVariant)} />
+          {message}
+        </span>
+      }
+      action={[
+        <IconButton
+          key="close"
+          aria-label="Close"
+          color="inherit"
+          className={classes.close}
+          onClick={onClose}
+        >
+          <CloseIcon className={classes.icon} />
+        </IconButton>,
+      ]}
+      {...other}
+    />
+  );
+}
+
+MySnackbarContent.propTypes = {
+  classes: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  message: PropTypes.node,
+  onClose: PropTypes.func,
+  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired,
+};
+
+const MySnackbarContentWrapper = withStyles(stylesOne)(MySnackbarContent);
 
 const styles = theme => ({
   root: {
@@ -24,6 +108,12 @@ const styles = theme => ({
     ...theme.mixins.gutters(),
     padding: '3px',
     margin: '15px'
+  },
+  paperTwo: {
+    maxWidth: 1700,
+    maxHeight: 500,
+    margin: "auto",
+    overflow: "hidden"
   },
   buttonLogin: {
     marginTop: '5px',
@@ -47,6 +137,11 @@ class LoginLayout extends Component {
     super(props);
 
     this.state = {
+      alert: {
+        open: false,
+        text: '',
+        variant: 'success'
+      },
       user: {
         name: '',
         email: '',
@@ -67,11 +162,13 @@ class LoginLayout extends Component {
     }).then(response => {
       if (response.ok)
         response.json().then(data => {
-          console.log(data);
           const user = { name: '', email: '', password: '' };
           this.setState({ user });
+          this.openAlert("Usuario registrado com sucesso!", "success");
         });
-      else console.log("Error!");
+      else this.openAlert("Aconteceu algum erro no registro, tente novamente!", "error");
+    }).catch(error => {
+      this.openAlert("Erro: " + error, "error");
     });
   }
 
@@ -88,8 +185,10 @@ class LoginLayout extends Component {
           this.props.login(data.token);
         });
       } else {
-        console.log("Error!");
+        this.openAlert("Aconteceu algum erro no login, tente novamente!", "error");
       }
+    }).catch(error => {
+      this.openAlert("Erro: " + error, "error");
     });
   }
 
@@ -117,19 +216,29 @@ class LoginLayout extends Component {
     }
   }
 
+  openAlert(text, variant) {
+    const alert = { ...this.state.alert };
+
+    alert.text = text;
+    alert.variant = variant;
+    alert.open = true;
+    this.setState({ alert });
+  }
+
+  closeAlert() {
+    const alert = { ...this.state.alert };
+
+    alert.open = false;
+    this.setState({ alert });
+  }
+
   render() {
     const { classes } = this.props;
     return (
       <div>
-        <div className={classes.root}>{"The best Social Network Ever!"}</div>
-        <div className={classes.root}>{"1000% zuera!"}</div>
-        <Paper className={classes.paper} elevation={1}>
-          <Typography variant="h5" component="h3">
-            This is a sheet of paper.
-          </Typography>
-          <Typography component="p">
-            Paper can be used to build surface or other elements for your application.
-          </Typography>
+        <div className={classes.root}>{"A melhor rede social!"}</div>
+        <Paper className={classes.paperTwo} >
+          <img alt="Smiley face" src="https://i2.wp.com/www.coisasdojapao.com/wp-content/uploads/2018/04/bilheterias-anime-Jap%C3%A3o.png?fit=1920%2C1080&ssl=1"></img>
         </Paper>
         <ExpansionPanel className={classes.paper}>
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -211,10 +320,25 @@ class LoginLayout extends Component {
               color="inherit"
               onClick={this.saveUser.bind(this)}
             >
-              Register
+              Registro
             </Button>
           </ExpansionPanelDetails>
         </ExpansionPanel>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          open={this.state.alert.open}
+          autoHideDuration={6000}
+          onClose={() => this.closeAlert()}
+        >
+          <MySnackbarContentWrapper
+            onClose={() => this.closeAlert()}
+            variant={this.state.alert.variant}
+            message={this.state.alert.text}
+          />
+        </Snackbar>
       </div>
     );
   }

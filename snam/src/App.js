@@ -304,7 +304,7 @@ class App extends Component {
           <main className={classes.content}>
             <div className={classes.toolbar} />
             <Switch>
-              {(this.state.hasLoggedUser ? this.state.authPaths : this.state.openPaths).map(item => (item.redirect ? <Route exact path={item.path} render={() => (<Redirect to={item.redirect} />)} /> : item.isExact ? <Route exact path={item.path} render={() => (<item.component {...item.props} />)} /> : <Route path={item.path} render={() => (<item.component {...item.props} />)} />))}
+              {(this.state.hasLoggedUser ? this.state.authPaths : this.state.openPaths).map((item, index) => (item.redirect ? <Route key={index} exact path={item.path} render={() => (<Redirect to={item.redirect} />)} /> : item.isExact ? <Route key={index} exact path={item.path} render={() => (<item.component {...item.props} />)} /> : <Route key={index} path={item.path} render={() => (<item.component {...item.props} />)} />))}
             </Switch>
           </main>
         </div>

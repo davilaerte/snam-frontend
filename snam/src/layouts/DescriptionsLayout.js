@@ -8,9 +8,6 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
-import RefreshIcon from "@material-ui/icons/Refresh";
 import request from "../config";
 
 const styles = theme => ({
@@ -39,11 +36,18 @@ class DescriptionsLayout extends Component {
     super(props);
 
     this.state = {
-      items: []
-    };
+      items: [],
+      search: ''
+    }
+
+    this.getDescriptions();
+  }
+
+  getDescriptions(name) {
+    const nameDescription = name || "";
 
     const method = "GET";
-    const path = "/description/all";
+    const path = "/description/all?nameDescription=" + nameDescription;
     request(path, method, undefined, {
       "Authorization": "Bearer " + localStorage.getItem('access_token')
     }).then(response => {
@@ -101,6 +105,8 @@ class DescriptionsLayout extends Component {
                   <TextField
                     fullWidth
                     placeholder="Search by name description"
+                    value={this.state.search}
+                    onChange={(e) => this.setState({ search: e.target.value })}
                     InputProps={{
                       disableUnderline: true,
                       className: classes.searchInput
@@ -112,14 +118,10 @@ class DescriptionsLayout extends Component {
                     variant="contained"
                     color="primary"
                     className={classes.addUser}
+                    onClick={() => this.getDescriptions(this.state.search)}
                   >
                     Search
                   </Button>
-                  <Tooltip title="Reload">
-                    <IconButton>
-                      <RefreshIcon className={classes.block} color="inherit" />
-                    </IconButton>
-                  </Tooltip>
                 </Grid>
               </Grid>
             </Toolbar>

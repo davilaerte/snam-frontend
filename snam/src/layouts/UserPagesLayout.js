@@ -1,4 +1,15 @@
 import React, { Component } from "react";
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+
+const styles = theme => ({
+  paper: {
+    maxWidth: 900,
+    margin: "auto",
+    overflow: "hidden",
+    textAlign: "center"
+  }
+});
 
 class UserPagesLayout extends Component {
   constructor(props) {
@@ -7,12 +18,15 @@ class UserPagesLayout extends Component {
     this.props.setTabValue();
   }
   render() {
+    const { classes } = this.props;
     return (
       <div>
-        <h1>Minhas páginas</h1>
+        <Paper className={classes.paper}>
+          <h1>Minhas páginas</h1>
+        </Paper>
       </div>
     );
   }
 }
 
-export default UserPagesLayout;
+export default withStyles(styles)(UserPagesLayout);

@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import GridCardsDescription from "../components/GridCardsDescription";
 import request from "../config";
 import { Paper } from "@material-ui/core";
@@ -6,6 +8,89 @@ import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import InfoIcon from '@material-ui/icons/Info';
+import CloseIcon from '@material-ui/icons/Close';
+import green from '@material-ui/core/colors/green';
+import amber from '@material-ui/core/colors/amber';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
+import WarningIcon from '@material-ui/icons/Warning';
+
+const variantIcon = {
+  success: CheckCircleIcon,
+  warning: WarningIcon,
+  error: ErrorIcon,
+  info: InfoIcon,
+};
+
+const stylesOne = theme => ({
+  success: {
+    backgroundColor: green[600],
+  },
+  error: {
+    backgroundColor: theme.palette.error.dark,
+  },
+  info: {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  warning: {
+    backgroundColor: amber[700],
+  },
+  icon: {
+    fontSize: 20,
+  },
+  iconVariant: {
+    opacity: 0.9,
+    marginRight: theme.spacing.unit,
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+});
+
+function MySnackbarContent(props) {
+  const { classes, className, message, onClose, variant, ...other } = props;
+  const Icon = variantIcon[variant];
+
+  return (
+    <SnackbarContent
+      className={classNames(classes[variant], className)}
+      aria-describedby="client-snackbar"
+      message={
+        <span id="client-snackbar" className={classes.message}>
+          <Icon className={classNames(classes.icon, classes.iconVariant)} />
+          {message}
+        </span>
+      }
+      action={[
+        <IconButton
+          key="close"
+          aria-label="Close"
+          color="inherit"
+          className={classes.close}
+          onClick={onClose}
+        >
+          <CloseIcon className={classes.icon} />
+        </IconButton>,
+      ]}
+      {...other}
+    />
+  );
+}
+
+MySnackbarContent.propTypes = {
+  classes: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  message: PropTypes.node,
+  onClose: PropTypes.func,
+  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired,
+};
+
+const MySnackbarContentWrapper = withStyles(stylesOne)(MySnackbarContent);
 
 const styles = theme => ({
   paper: {
@@ -54,6 +139,11 @@ class UserDescriptionsLayout extends Component {
     super(props);
 
     this.state = {
+      alert: {
+        open: false,
+        text: '',
+        variant: 'success'
+      },
       items: [],
       open: false,
       description: {
@@ -100,7 +190,9 @@ class UserDescriptionsLayout extends Component {
           this.setState({ items: data });
           this.props.setNumberDescriptions(data.length);
         });
-      else console.log("Error!");
+      else this.openAlert("Aconteceu algum ao tentar obter as descrições!", "error");
+    }).catch(error => {
+      this.openAlert("Erro: " + error, "error");
     });
   }
 
@@ -119,7 +211,9 @@ class UserDescriptionsLayout extends Component {
           items.push(data);
           this.setState({ items });
         });
-      else console.log("Error!");
+      else this.openAlert("Aconteceu algum ao tentar registar a descrição, tente novamente!", "error");
+    }).catch(error => {
+      this.openAlert("Erro: " + error, "error");
     });
 
     this.handleClose();
@@ -149,6 +243,22 @@ class UserDescriptionsLayout extends Component {
     });
 
     this.setState({ items });
+  }
+
+  openAlert(text, variant) {
+    const alert = { ...this.state.alert };
+
+    alert.text = text;
+    alert.variant = variant;
+    alert.open = true;
+    this.setState({ alert });
+  }
+
+  closeAlert() {
+    const alert = { ...this.state.alert };
+
+    alert.open = false;
+    this.setState({ alert });
   }
 
   render() {
@@ -230,6 +340,21 @@ class UserDescriptionsLayout extends Component {
           </div>
         </Modal>
         <GridCardsDescription setLike={this.setLike.bind(this)} setDeslike={this.setDeslike.bind(this)} items={this.state.items} />
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          open={this.state.alert.open}
+          autoHideDuration={6000}
+          onClose={() => this.closeAlert()}
+        >
+          <MySnackbarContentWrapper
+            onClose={() => this.closeAlert()}
+            variant={this.state.alert.variant}
+            message={this.state.alert.text}
+          />
+        </Snackbar>
       </div>
     );
   }
