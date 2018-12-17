@@ -29,12 +29,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 
-import HomeLayout from "./layouts/HomeLayout";
-import PagesLayout from "./layouts/PagesLayout";
-import DescriptionsLayout from "./layouts/DescriptionsLayout";
-import NotificationsLayout from "./layouts/NotificationsLayout";
-import AboutLayout from "./layouts/AboutLayout";
-import LoginLayout from "./layouts/LoginLayout";
+import HomeLayout from "./componentsLayouts/HomeLayout";
+import PagesLayout from "./componentsLayouts/PagesLayout";
+import DescriptionsLayout from "./componentsLayouts/DescriptionsLayout";
+import NotificationsLayout from "./componentsLayouts/NotificationsLayout";
+import AboutLayout from "./componentsLayouts/AboutLayout";
+import LoginLayout from "./componentsLayouts/LoginLayout";
 
 const drawerWidth = 240;
 const tokenName = 'access_token';
